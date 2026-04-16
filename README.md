@@ -21,6 +21,8 @@ cmake --build build --target setup
 ```
 ### Development Workflow
 
+a
+
 The build system handles header generation via cbindgen, and C++ linking automatically.
 - Build everything: `cmake --build build`
 - Launch Godot Editor: `cmake --build build --target editor`
