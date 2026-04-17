@@ -10,8 +10,8 @@ config_version=5
 
 [application]
 
-config/name="GodotPP"
-run/main_scene="uid://dp0vhmk4t8jgu"
+config/name="Godot Vehicles"
+run/main_scene="uid://by5hjr4c1t5ad"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 

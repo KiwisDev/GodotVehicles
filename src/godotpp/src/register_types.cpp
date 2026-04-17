@@ -5,6 +5,9 @@
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
 
+#include "nodes/vehicles.h"
+#include "parts/wheel.h"
+
 using namespace godot;
 
 void initialize_module(ModuleInitializationLevel p_level) {
@@ -12,8 +15,9 @@ void initialize_module(ModuleInitializationLevel p_level) {
         return;
     }
 
-    // Register your custom Node2D
     ClassDB::register_class<GDExample>();
+    ClassDB::register_class<GVWheel>();
+    ClassDB::register_class<GVVehicle>();
 }
 
 void uninitialize_module(ModuleInitializationLevel p_level) {
@@ -23,7 +27,7 @@ void uninitialize_module(ModuleInitializationLevel p_level) {
 }
 
 extern "C" {
-    GDExtensionBool GDE_EXPORT godotpp_library_init(GDExtensionInterfaceGetProcAddress p_get_proc_address, const GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization) {
+    GDExtensionBool GDE_EXPORT godotvehicles_library_init(GDExtensionInterfaceGetProcAddress p_get_proc_address, const GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization) {
         godot::GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
 
         init_obj.register_initializer(initialize_module);

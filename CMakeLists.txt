@@ -36,7 +36,7 @@ add_custom_target(setup
 # Target: editor (Launches Godot Editor)
 add_custom_target(editor
         COMMAND ${GODOT_EXECUTABLE} -e --path "${GODOT_PROJECT_DIR}"
-        DEPENDS setup GodotPP
+        DEPENDS setup GodotVehicles
         COMMENT "Launching Godot Editor..."
         USES_TERMINAL
 )
@@ -44,7 +44,7 @@ add_custom_target(editor
 # Target: play (Launches the Game)
 add_custom_target(play
         COMMAND ${GODOT_EXECUTABLE} --path "${GODOT_PROJECT_DIR}"
-        DEPENDS setup GodotPP
+        DEPENDS setup GodotVehicles
         COMMENT "Launching Game..."
         USES_TERMINAL
 )
@@ -71,6 +71,6 @@ add_custom_target(package
         COMMAND ${GODOT_EXECUTABLE} --headless --path "${GODOT_PROJECT_DIR}"
         --export-release "${GODOT_EXPORT_PRESET}" "${GODOT_EXPORT_OUTPUT}"
 
-        DEPENDS setup GodotPP
+        DEPENDS setup GodotVehicles
         COMMENT "Packaging Game for ${GODOT_EXPORT_PRESET} to ${GODOT_EXPORT_OUTPUT}..."
 )
