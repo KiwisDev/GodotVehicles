@@ -13,10 +13,14 @@ GVVehicle::~GVVehicle() {}
 
 void GVVehicle::_ready()
 {
-    set_use_custom_integrator(true);
     set_can_sleep(false);
     wheels.clear();
     find_wheels(this);
+
+    PhysicsServer3D::get_singleton()->body_set_force_integration_callback(
+        get_rid(),
+        callable_mp(this, &GVVehicle::_physics_callback)
+        );
 }
 
 void GVVehicle::find_wheels(Node* current_node)
@@ -33,9 +37,8 @@ void GVVehicle::find_wheels(Node* current_node)
     }
 }
 
-void GVVehicle::_integrate_forces(PhysicsDirectBodyState3D* state)
+void GVVehicle::_physics_callback(PhysicsDirectBodyState3D* state)
 {
-    state->apply_central_force(Vector3(0.0f, 1000.0f, 0.0f));
     if (wheels.empty()) return;
 
     PhysicsDirectSpaceState3D* space_state = get_world_3d()->get_direct_space_state();
@@ -43,15 +46,22 @@ void GVVehicle::_integrate_forces(PhysicsDirectBodyState3D* state)
 
     for (GVWheel* wheel : wheels)
     {
+        Vector3 car_up = get_global_basis().get_column(1).normalized();
+        Vector3 wheel_down = -car_up;
+        Vector3 wheel_forward = -get_global_basis().get_column(2).normalized();
+        Vector3 wheel_right = get_global_basis().get_column(0).normalized();
+
         if (wheel->get_is_steering())
         {
-            Vector3 rotation = wheel->get_rotation();
-            rotation.y = steering_angle;
-            wheel->set_rotation(rotation);
+            wheel_forward = wheel_forward.rotated(car_up, steering_angle);
+            wheel_right = wheel_right.rotated(car_up, steering_angle);
+
+            Vector3 visual_rot = wheel->get_rotation();
+            visual_rot.y = steering_angle;
+            wheel->set_rotation(visual_rot);
         }
 
         Vector3 wheel_pos = wheel->get_global_position();
-        Vector3 wheel_down = -wheel->get_global_basis().get_column(1).normalized();
         float ray_length = wheel->get_suspension_rest_length() + wheel->get_radius();
 
         Ref<PhysicsRayQueryParameters3D> query = PhysicsRayQueryParameters3D::create(wheel_pos, wheel_pos + (wheel_down * ray_length));
@@ -68,7 +78,7 @@ void GVVehicle::_integrate_forces(PhysicsDirectBodyState3D* state)
             float spring_length = distance - wheel->get_radius();
             float compression = wheel->get_suspension_rest_length() - spring_length;
 
-            Vector3 local_pos = wheel_pos - wheel->get_global_position();
+            Vector3 local_pos = wheel_pos - get_global_position();
             Vector3 point_vel = state->get_velocity_at_local_position(local_pos);
 
             float compression_vel = (compression - wheel->get_previous_compression()) / delta;
@@ -83,20 +93,18 @@ void GVVehicle::_integrate_forces(PhysicsDirectBodyState3D* state)
             // Longitudinal
             if (wheel->get_is_drive())
             {
-                Vector3 forward_dir = -wheel->get_global_basis().get_column(2).normalized();
-                state->apply_force(forward_dir * engine_force, local_pos);
+                state->apply_force(wheel_forward * engine_force, local_pos);
             }
 
             // Lateral
-            Vector3 right_dir = wheel->get_global_basis().get_column(0).normalized();
-            float lateral_vel = point_vel.dot(right_dir);
+            float lateral_vel = point_vel.dot(wheel_right);
 
             float desired_accel = -lateral_vel / delta;
             float mass_supported = get_mass() / wheels.size();
             float friction_force = desired_accel * mass_supported;
 
             friction_force = CLAMP(friction_force, -max_grip * 100.0f, max_grip * 100.0f);
-            state->apply_force(right_dir * friction_force, local_pos);
+            state->apply_force(wheel_right * friction_force, local_pos);
         }
         else
         {
@@ -107,6 +115,8 @@ void GVVehicle::_integrate_forces(PhysicsDirectBodyState3D* state)
 
 void GVVehicle::_bind_methods()
 {
+    ClassDB::bind_method(D_METHOD("_physics_callback", "state"), &GVVehicle::_physics_callback);
+
     ClassDB::bind_method(D_METHOD("set_engine_force", "force"), &GVVehicle::set_engine_force);
     ClassDB::bind_method(D_METHOD("get_engine_force"), &GVVehicle::get_engine_force);
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "engine_force"), "set_engine_force", "get_engine_force");

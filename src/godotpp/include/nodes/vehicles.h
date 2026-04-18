@@ -31,7 +31,7 @@ namespace godot
 
         void _ready() override;
 
-        void _integrate_forces(PhysicsDirectBodyState3D* state) override;
+        void _physics_callback(PhysicsDirectBodyState3D* state);
 
         void set_engine_force(float p_force) { engine_force = p_force; }
         float get_engine_force() const { return engine_force; }

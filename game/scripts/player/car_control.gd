@@ -1,6 +1,5 @@
 extends GVVehicle
 
-
 func _physics_process(delta: float) -> void:
 	var steer_input = Input.get_axis("ui_right", "ui_left")
 	var accel_input = Input.get_axis("ui_down", "ui_up")

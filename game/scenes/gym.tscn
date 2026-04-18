@@ -1,13 +1,37 @@
 [gd_scene format=3 uid="uid://by5hjr4c1t5ad"]
 
+[ext_resource type="Script" uid="uid://bssbfh77460qd" path="res://scripts/player/car_control.gd" id="1_5hyia"]
+[ext_resource type="Shader" uid="uid://m7ubxl7y3ddk" path="res://shaders/grid_shader.gdshader" id="2_5hyia"]
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_0md2f"]
 size = Vector3(4.5, 1.7, 2)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_4duur"]
 size = Vector3(500, 0.1, 500)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5hyia"]
-albedo_color = Color(0.19607843, 0.19607843, 0.19607843, 1)
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8el2m"]
+render_priority = 0
+shader = ExtResource("2_5hyia")
+shader_parameter/subdivisions = 32.0
+shader_parameter/grid_width = 0.02
+shader_parameter/background_color = Color(0.2, 0.2, 0.2, 1)
+shader_parameter/background_color_two = Color(0.1, 0.1, 0.1, 1)
+shader_parameter/grid_color = Color(0.5, 0.5, 0.5, 1)
+shader_parameter/dashed_scale_x = 0.02
+shader_parameter/dashed_scale_y = 0.02
+shader_parameter/dashed_count_x = 1.0
+shader_parameter/dashed_count_y = 1.0
+shader_parameter/point_width = 0.021
+shader_parameter/point_color = Color(0, 0, 0, 1)
+shader_parameter/point_scale_x = 0.05
+shader_parameter/point_scale_y = 0.05
+shader_parameter/inside_width = 0.01
+shader_parameter/inside_subdivisions = 6.0
+shader_parameter/inside_color = Color(0.4, 0.4, 0.4, 1)
+shader_parameter/in_dashed_scale_x = 0.3
+shader_parameter/in_dashed_scale_y = 0.3
+shader_parameter/in_dashed_count_x = 6.0
+shader_parameter/in_dashed_count_y = 6.0
 
 [sub_resource type="Environment" id="Environment_0md2f"]
 background_mode = 1
@@ -16,9 +40,10 @@ background_color = Color(0, 0.70980394, 1, 1)
 [node name="Gym" type="Node3D" unique_id=2101016810]
 
 [node name="GVVehicle" type="GVVehicle" parent="." unique_id=1226179280]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.824693, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0533104, 0)
 mass = 1500.0
 can_sleep = false
+script = ExtResource("1_5hyia")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="GVVehicle" unique_id=1276917458]
 shape = SubResource("BoxShape3D_0md2f")
@@ -27,8 +52,10 @@ shape = SubResource("BoxShape3D_0md2f")
 size = Vector3(4.5, 1.7, 2)
 
 [node name="WheelFL" type="GVWheel" parent="GVVehicle" unique_id=948261036]
+suspension_stiffness = 30000.0
+suspension_damping = 3000.0
 is_steering = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5909821, -0.8419168, -1.2987549)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6, -0.842, -1.3)
 
 [node name="WheelShape" type="CSGCylinder3D" parent="GVVehicle/WheelFL" unique_id=1356896599]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, -0.31155747, 0)
@@ -36,8 +63,10 @@ radius = 0.35
 height = 0.2
 
 [node name="WheelRL" type="GVWheel" parent="GVVehicle" unique_id=339331076]
-is_steering = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.591, -0.84188044, -1.299)
+suspension_stiffness = 30000.0
+suspension_damping = 3000.0
+is_drive = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, -0.842, -1.3)
 
 [node name="WheelShape" type="CSGCylinder3D" parent="GVVehicle/WheelRL" unique_id=1745803094]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, -0.31155747, 0)
@@ -45,8 +74,10 @@ radius = 0.35
 height = 0.2
 
 [node name="WheelFR" type="GVWheel" parent="GVVehicle" unique_id=1801301348]
-is_drive = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.591, -0.84188044, 1.299)
+suspension_stiffness = 30000.0
+suspension_damping = 3000.0
+is_steering = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6, -0.842, 1.3)
 
 [node name="WheelShape" type="CSGCylinder3D" parent="GVVehicle/WheelFR" unique_id=461143716]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, -0.31155747, 0)
@@ -54,8 +85,10 @@ radius = 0.35
 height = 0.2
 
 [node name="WheelRR" type="GVWheel" parent="GVVehicle" unique_id=478433261]
+suspension_stiffness = 30000.0
+suspension_damping = 3000.0
 is_drive = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.591, -0.84188044, 1.299)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, -0.842, 1.3)
 
 [node name="WheelShape" type="CSGCylinder3D" parent="GVVehicle/WheelRR" unique_id=55965423]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, -0.31155747, 0)
@@ -63,7 +96,8 @@ radius = 0.35
 height = 0.2
 
 [node name="Camera3D" type="Camera3D" parent="GVVehicle" unique_id=1974883360]
-transform = Transform3D(-4.310914e-08, 0.1654263, -0.98622215, 7.231013e-09, 0.98622215, 0.1654263, 1, 0, -4.371139e-08, -5.912429, 2.197221, 0)
+transform = Transform3D(-4.310914e-08, 0.1654263, -0.98622215, 7.231013e-09, 0.98622215, 0.1654263, 1, 0, -4.371139e-08, -5.912, 2.197, -1.2)
+current = true
 
 [node name="Ground" type="StaticBody3D" parent="." unique_id=1889333404]
 
@@ -71,8 +105,9 @@ transform = Transform3D(-4.310914e-08, 0.1654263, -0.98622215, 7.231013e-09, 0.9
 shape = SubResource("BoxShape3D_4duur")
 
 [node name="CSGBox3D" type="CSGBox3D" parent="Ground" unique_id=1958342964]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0035910606, 4.7683716e-07, 0.003531456)
 size = Vector3(500, 0.1, 500)
-material = SubResource("StandardMaterial3D_5hyia")
+material = SubResource("ShaderMaterial_8el2m")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1445121639]
 transform = Transform3D(0.99929076, -0.027112966, -0.02613061, 0.0376553, 0.71951985, 0.6934502, 0, -0.69394237, 0.72003055, 0, 0, 0)
