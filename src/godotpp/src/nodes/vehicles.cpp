@@ -3,6 +3,7 @@
 #include "godot_cpp/classes/physics_direct_body_state3d.hpp"
 #include "godot_cpp/classes/physics_direct_space_state3d.hpp"
 #include "godot_cpp/classes/physics_ray_query_parameters3d.hpp"
+#include "godot_cpp/classes/standard_material3d.hpp"
 #include "godot_cpp/classes/world3d.hpp"
 
 using namespace godot;
@@ -13,6 +14,20 @@ GVVehicle::~GVVehicle() {}
 
 void GVVehicle::_ready()
 {
+    debug_mesh_instance = memnew(MeshInstance3D);
+    debug_mesh.instantiate();
+    debug_mesh_instance->set_mesh(debug_mesh);
+    debug_mesh_instance->set_as_top_level(true);
+
+    Ref<StandardMaterial3D> mat;
+    mat.instantiate();
+    mat->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+    mat->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+    mat->set_flag(BaseMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+    debug_mesh_instance->set_material_override(mat);
+
+    add_child(debug_mesh_instance);
+
     set_can_sleep(false);
     wheels.clear();
     find_wheels(this);
@@ -21,6 +36,27 @@ void GVVehicle::_ready()
         get_rid(),
         callable_mp(this, &GVVehicle::_physics_callback)
         );
+}
+
+void GVVehicle::_process(double p_delta)
+{
+    if (show_debug_lines == true)
+    {
+        debug_mesh->clear_surfaces();
+
+        if (!debug_lines.empty())
+        {
+            debug_mesh->surface_begin(Mesh::PRIMITIVE_LINES);
+            for (const DebugLine& line : debug_lines)
+            {
+                debug_mesh->surface_set_color(line.color);
+                debug_mesh->surface_add_vertex(line.start);
+                debug_mesh->surface_set_color(line.color);
+                debug_mesh->surface_add_vertex(line.end);
+            }
+            debug_mesh->surface_end();
+        }
+    }
 }
 
 void GVVehicle::find_wheels(Node* current_node)
@@ -39,6 +75,8 @@ void GVVehicle::find_wheels(Node* current_node)
 
 void GVVehicle::_physics_callback(PhysicsDirectBodyState3D* state)
 {
+    debug_lines.clear();
+
     if (wheels.empty()) return;
 
     PhysicsDirectSpaceState3D* space_state = get_world_3d()->get_direct_space_state();
@@ -57,7 +95,7 @@ void GVVehicle::_physics_callback(PhysicsDirectBodyState3D* state)
             wheel_right = wheel_right.rotated(car_up, steering_angle);
 
             Vector3 visual_rot = wheel->get_rotation();
-            visual_rot.y = steering_angle;
+            visual_rot.y = wheel->get_initial_rotation() + steering_angle;
             wheel->set_rotation(visual_rot);
         }
 
@@ -90,10 +128,15 @@ void GVVehicle::_physics_callback(PhysicsDirectBodyState3D* state)
             Vector3 hit_normal = hit["normal"];
             state->apply_force(hit_normal * spring_force, local_pos);
 
+            // DEBUG //
+            debug_lines.push_back({hit_pos, hit_pos + (car_up * (spring_force / 1000.0f)), Color(1, 0, 0)});
+
             // Longitudinal
             if (wheel->get_is_drive())
             {
                 state->apply_force(wheel_forward * engine_force, local_pos);
+                // DEBUG //
+                debug_lines.push_back({hit_pos, hit_pos + (wheel_forward * (engine_force / 1000.0f)), Color(0, 1, 0)});
             }
 
             // Lateral
@@ -105,6 +148,9 @@ void GVVehicle::_physics_callback(PhysicsDirectBodyState3D* state)
 
             friction_force = CLAMP(friction_force, -max_grip * 100.0f, max_grip * 100.0f);
             state->apply_force(wheel_right * friction_force, local_pos);
+
+            // DEBUG //
+            debug_lines.push_back({hit_pos, hit_pos + (wheel_right * (friction_force / 1000.0f)), Color(0, 0, 1)});
         }
         else
         {
@@ -124,4 +170,12 @@ void GVVehicle::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_steering_angle", "angle"), &GVVehicle::set_steering_angle);
     ClassDB::bind_method(D_METHOD("get_steering_angle"), &GVVehicle::get_steering_angle);
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "steering_angle"), "set_steering_angle", "get_steering_angle");
+
+    ClassDB::bind_method(D_METHOD("set_max_grip", "max_grip"), &GVVehicle::set_max_grip);
+    ClassDB::bind_method(D_METHOD("get_max_grip"), &GVVehicle::get_max_grip);
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_grip"), "set_max_grip", "get_max_grip");
+
+    ClassDB::bind_method(D_METHOD("set_show_debug_lines", "show_debug_lines"), &GVVehicle::set_show_debug_lines);
+    ClassDB::bind_method(D_METHOD("get_show_debug_lines"), &GVVehicle::get_show_debug_lines);
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_debug_lines"), "set_show_debug_lines", "get_show_debug_lines");
 }

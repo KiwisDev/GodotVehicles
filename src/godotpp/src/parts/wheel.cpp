@@ -3,8 +3,12 @@
 using namespace godot;
 
 GVWheel::GVWheel() {}
-
 GVWheel::~GVWheel() {}
+
+void GVWheel::_ready()
+{
+    initial_rotation = get_rotation().y;
+}
 
 void GVWheel::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_radius", "radius"), &GVWheel::set_radius);

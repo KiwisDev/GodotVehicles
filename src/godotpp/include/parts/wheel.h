@@ -19,6 +19,7 @@ namespace godot
         bool is_drive = false;
 
         float previous_compression = 0.0f;
+        float initial_rotation = 0.0f;
 
     protected:
         static void _bind_methods();
@@ -26,6 +27,8 @@ namespace godot
     public:
         GVWheel();
         ~GVWheel();
+
+        void _ready() override;
 
         void set_radius(float p_radius) { radius = p_radius; }
         float get_radius() const { return radius; }
@@ -47,6 +50,8 @@ namespace godot
 
         void set_previous_compression(float p_comp) { previous_compression = p_comp; }
         float get_previous_compression() const { return previous_compression; }
+
+        float get_initial_rotation() const { return initial_rotation; }
     };
 }
 
